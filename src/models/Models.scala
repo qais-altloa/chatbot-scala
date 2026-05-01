@@ -4,9 +4,7 @@ package models
 object Models {
 
   // ─────────────────────────────────────────────
-  // Technique
-  // Represents one productivity technique in the knowledge base.
-  // Immutable by default (case class).
+
   // ─────────────────────────────────────────────
   case class Technique(
     name        : String,       // e.g. "Pomodoro Technique"
@@ -18,9 +16,7 @@ object Models {
   )
 
   // ─────────────────────────────────────────────
-  // InteractionEntry
-  // Represents one turn in the conversation (user + bot).
-  // Used by Module 3 (Conversation Memory).
+
   // ─────────────────────────────────────────────
   case class InteractionEntry(
     sequenceNo     : Int,     // turn number (1, 2, 3, ...)
@@ -31,9 +27,7 @@ object Models {
   )
 
   // ─────────────────────────────────────────────
-  // ConversationState
-  // Holds the full immutable state of the conversation.
-  // Never mutated — each update returns a NEW state.
+
   // ─────────────────────────────────────────────
   case class ConversationState(
     history      : List[InteractionEntry],  // full conversation log
@@ -42,8 +36,7 @@ object Models {
   )
 
   // ─────────────────────────────────────────────
-  // Companion object: ConversationState
-  // Provides a clean empty starting state.
+
   // ─────────────────────────────────────────────
   object ConversationState {
     def empty: ConversationState = ConversationState(
@@ -54,9 +47,7 @@ object Models {
   }
 
   // ─────────────────────────────────────────────
-  // Intent (ADT — Algebraic Data Type)
-  // Models all possible user intents as sealed traits.
-  // Used with pattern matching for exhaustive handling.
+
   // ─────────────────────────────────────────────
   sealed trait Intent
   case object Greeting            extends Intent
