@@ -1,13 +1,3 @@
-// =============================================================
-// File: ConversationMemory.scala
-// Module 3: Smart Conversation Memory & Context Tracker
-// Project: Productivity Techniques Chatbot
-// Course: C-CS219 — Functional Programming
-// Description: Tracks conversation history, detects repeated
-//              queries, extracts topics, summarizes conversation,
-//              and detects user mood using pure functions,
-//              immutable data, HOFs, and pattern matching.
-// =============================================================
 
 package modules
 
