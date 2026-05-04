@@ -1,9 +1,4 @@
-// =============================================================
-// File: Main.scala
-// Purpose: Entry point — connects all 3 modules into a fully
-//          interactive Productivity Techniques Chatbot.
-// Course: C-CS219 — Functional Programming
-// =============================================================
+
 
 import models.Models._
 import modules.CoreChatbot._
@@ -13,19 +8,17 @@ import modules.ConversationMemory._
 object Main extends App {
 
   // ─────────────────────────────────────────────
-  // Starting state — immutable, empty
+
   // ─────────────────────────────────────────────
   var state = ConversationState.empty
 
   // ─────────────────────────────────────────────
-  // Print greeting
+
   // ─────────────────────────────────────────────
   println(greetUser())
 
   // ─────────────────────────────────────────────
-  // Main conversation loop
-  // Reads user input, processes it through all modules,
-  // logs interaction, and prints response.
+  
   // ─────────────────────────────────────────────
   var running = true
 
@@ -108,9 +101,7 @@ object Main extends App {
   }
 
   // ─────────────────────────────────────────────
-  // extractTag
-  // Helper: Extracts the full signal tag from a response string.
-  // Pure function.
+  
   // ─────────────────────────────────────────────
   def extractTag(response: String, tagStart: String): String = {
     val startIndex = response.indexOf(tagStart)

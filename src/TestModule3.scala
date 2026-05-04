@@ -1,9 +1,4 @@
-// =============================================================
-// File: TestModule3.scala
-// Purpose: Tests all functions in Module 3
-//          (ConversationMemory)
-// Course: C-CS219 — Functional Programming
-// =============================================================
+
 
 import models.Models._
 import modules.ConversationMemory._

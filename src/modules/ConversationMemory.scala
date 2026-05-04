@@ -16,12 +16,7 @@ import models.Models._
 object ConversationMemory {
 
   // ─────────────────────────────────────────────
-  // logInteraction
-  // Purpose: Records each exchange and returns a NEW
-  //          immutable ConversationState.
-  // ✅ IMMUTABILITY — never mutates, always returns new state.
-  // ✅ CASE CLASS — InteractionEntry built here.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def logInteraction(
     userInput   : String,
@@ -42,10 +37,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // detectIntentFromInput
-  // Purpose: Simple intent detection for logging purposes.
-  // ✅ PATTERN MATCHING with guards.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   private def detectIntentFromInput(input: String): String = {
     val lower = input.toLowerCase
@@ -61,28 +53,19 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // getConversationHistory
-  // Purpose: Returns the full conversation log.
-  // Pure function — same state = same history.
+
   // ─────────────────────────────────────────────
   def getConversationHistory(state: ConversationState): List[InteractionEntry] =
     state.history
 
   // ─────────────────────────────────────────────
-  // getLastNInteractions
-  // Purpose: Returns the most recent N interactions.
-  // ✅ HOF — takeRight
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def getLastNInteractions(n: Int, state: ConversationState): List[InteractionEntry] =
     state.history.takeRight(n)
 
   // ─────────────────────────────────────────────
-  // detectRepeatedQuery
-  // Purpose: Checks if user asked a similar question before.
-  // ✅ HOF — exists, filter
-  // ✅ PATTERN MATCHING on Boolean result.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def detectRepeatedQuery(input: String, history: List[InteractionEntry]): Boolean = {
 
@@ -97,11 +80,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // extractTopics
-  // Purpose: Identifies main topics discussed so far.
-  // ✅ HOF — map, filter, flatMap, distinct
-  // ✅ PATTERN MATCHING on keywords.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def extractTopics(history: List[InteractionEntry]): List[String] = {
 
@@ -131,11 +110,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // summarizeConversation
-  // Purpose: Generates a brief summary of the conversation.
-  // ✅ HOF — filter, map, length
-  // ✅ PATTERN MATCHING on history size.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def summarizeConversation(history: List[InteractionEntry]): String = {
 
@@ -172,10 +147,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // getMostDiscussedTopics
-  // Purpose: Returns topics ranked by frequency.
-  // ✅ HOF — groupBy, map, toList, sortBy
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def getMostDiscussedTopics(history: List[InteractionEntry]): List[(String, Int)] = {
 
@@ -208,12 +180,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // getUserMood
-  // Purpose: Simple keyword-based sentiment detection.
-  //          Adapts chatbot tone based on user mood.
-  // ✅ PATTERN MATCHING on sentiment score.
-  // ✅ HOF — filter, length
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def getUserMood(history: List[InteractionEntry]): String = {
 
@@ -241,10 +208,7 @@ object ConversationMemory {
   }
 
   // ─────────────────────────────────────────────
-  // handleSummaryRequest
-  // Purpose: Processes [SUMMARY_REQUEST] tag from Module 1.
-  // ✅ PATTERN MATCHING on request type.
-  // Pure function.
+
   // ─────────────────────────────────────────────
   def handleSummaryRequest(tag: String, state: ConversationState): String = {
 
