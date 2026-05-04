@@ -1,0 +1,289 @@
+// =============================================================
+// File: ConversationMemory.scala
+// Module 3: Smart Conversation Memory & Context Tracker
+// Project: Productivity Techniques Chatbot
+// Course: C-CS219 — Functional Programming
+// Description: Tracks conversation history, detects repeated
+//              queries, extracts topics, summarizes conversation,
+//              and detects user mood using pure functions,
+//              immutable data, HOFs, and pattern matching.
+// =============================================================
+
+package modules
+
+import models.Models._
+
+object ConversationMemory {
+
+  // ─────────────────────────────────────────────
+  // logInteraction
+  // Purpose: Records each exchange and returns a NEW
+  //          immutable ConversationState.
+  // ✅ IMMUTABILITY — never mutates, always returns new state.
+  // ✅ CASE CLASS — InteractionEntry built here.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def logInteraction(
+    userInput   : String,
+    botResponse : String,
+    context     : ConversationState
+  ): ConversationState = {
+
+    val entry = InteractionEntry(
+      sequenceNo     = context.history.length + 1,
+      timestamp      = java.time.LocalDateTime.now().toString,
+      userInput      = userInput,
+      botResponse    = botResponse,
+      detectedIntent = detectIntentFromInput(userInput)
+    )
+
+    // Return NEW state — original untouched
+    context.copy(history = context.history :+ entry)
+  }
+
+  // ─────────────────────────────────────────────
+  // detectIntentFromInput
+  // Purpose: Simple intent detection for logging purposes.
+  // ✅ PATTERN MATCHING with guards.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  private def detectIntentFromInput(input: String): String = {
+    val lower = input.toLowerCase
+    lower match {
+      case l if l.contains("recommend") || l.contains("suggest") => "recommendation_request"
+      case l if l.contains("what") || l.contains("explain")      => "explanation_request"
+      case l if l.contains("prefer") || l.contains("like")       => "preference_update"
+      case l if l.contains("summary") || l.contains("summarize") => "summary_request"
+      case l if l.contains("hi") || l.contains("hello")          => "greeting"
+      case l if l.contains("quit") || l.contains("bye")          => "exit"
+      case _                                                      => "unknown"
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // getConversationHistory
+  // Purpose: Returns the full conversation log.
+  // Pure function — same state = same history.
+  // ─────────────────────────────────────────────
+  def getConversationHistory(state: ConversationState): List[InteractionEntry] =
+    state.history
+
+  // ─────────────────────────────────────────────
+  // getLastNInteractions
+  // Purpose: Returns the most recent N interactions.
+  // ✅ HOF — takeRight
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def getLastNInteractions(n: Int, state: ConversationState): List[InteractionEntry] =
+    state.history.takeRight(n)
+
+  // ─────────────────────────────────────────────
+  // detectRepeatedQuery
+  // Purpose: Checks if user asked a similar question before.
+  // ✅ HOF — exists, filter
+  // ✅ PATTERN MATCHING on Boolean result.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def detectRepeatedQuery(input: String, history: List[InteractionEntry]): Boolean = {
+
+    val inputWords = input.toLowerCase.split("\\s+").toList.filter(_.length > 3)
+
+    // HOF exists — check if any past input shares 2+ keywords
+    history.exists { entry =>
+      val entryWords = entry.userInput.toLowerCase.split("\\s+").toList
+      val commonWords = inputWords.filter(w => entryWords.exists(e => e.contains(w)))
+      commonWords.length >= 2
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // extractTopics
+  // Purpose: Identifies main topics discussed so far.
+  // ✅ HOF — map, filter, flatMap, distinct
+  // ✅ PATTERN MATCHING on keywords.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def extractTopics(history: List[InteractionEntry]): List[String] = {
+
+    // HOF flatMap — extract topics from each entry
+    val topics = history.flatMap { entry =>
+      val lower = entry.userInput.toLowerCase
+
+      // Pattern matching to classify topic
+      lower match {
+        case l if l.contains("pomodoro")                          => List("Pomodoro")
+        case l if l.contains("deep work")                        => List("Deep Work")
+        case l if l.contains("gtd") || l.contains("getting things") => List("GTD")
+        case l if l.contains("time block")                       => List("Time Blocking")
+        case l if l.contains("eisenhower")                       => List("Eisenhower Matrix")
+        case l if l.contains("focus") || l.contains("concentrat") => List("Focus")
+        case l if l.contains("energy")                           => List("Energy Management")
+        case l if l.contains("priorit")                          => List("Prioritization")
+        case l if l.contains("plan") || l.contains("schedule")   => List("Planning")
+        case l if l.contains("recommend") || l.contains("suggest") => List("Recommendations")
+        case l if l.contains("prefer")                           => List("Preferences")
+        case _                                                   => List.empty
+      }
+    }
+
+    // HOF distinct — remove duplicates
+    topics.distinct
+  }
+
+  // ─────────────────────────────────────────────
+  // summarizeConversation
+  // Purpose: Generates a brief summary of the conversation.
+  // ✅ HOF — filter, map, length
+  // ✅ PATTERN MATCHING on history size.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def summarizeConversation(history: List[InteractionEntry]): String = {
+
+    // Pattern matching on history size
+    history match {
+      case Nil =>
+        "No conversation history found yet. Start chatting to build your history!"
+
+      case entries =>
+        val totalInteractions = entries.length
+
+        // HOF filter — count each intent type
+        val recommendations = entries.filter(_.detectedIntent == "recommendation_request").length
+        val explanations    = entries.filter(_.detectedIntent == "explanation_request").length
+        val preferences     = entries.filter(_.detectedIntent == "preference_update").length
+
+        // Extract topics discussed
+        val topics = extractTopics(entries)
+        val topicsText = topics match {
+          case Nil  => "no specific topics"
+          case list => list.mkString(", ")
+        }
+
+        s"""
+        | ── Conversation Summary ──────────────────────
+        | Total interactions   : $totalInteractions
+        | Recommendation requests: $recommendations
+        | Explanation requests : $explanations
+        | Preference updates   : $preferences
+        | Topics discussed     : $topicsText
+        | ──────────────────────────────────────────────
+        """.stripMargin
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // getMostDiscussedTopics
+  // Purpose: Returns topics ranked by frequency.
+  // ✅ HOF — groupBy, map, toList, sortBy
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def getMostDiscussedTopics(history: List[InteractionEntry]): List[(String, Int)] = {
+
+    // Extract all topics including duplicates
+    val allTopics: List[String] = history.flatMap { entry =>
+      val lower = entry.userInput.toLowerCase
+      lower match {
+        case l if l.contains("focus") || l.contains("concentrat") => List("Focus")
+        case l if l.contains("energy")                            => List("Energy Management")
+        case l if l.contains("priorit")                           => List("Prioritization")
+        case l if l.contains("plan") || l.contains("schedule")    => List("Planning")
+        case l if l.contains("recommend") || l.contains("suggest") => List("Recommendations")
+        case l if l.contains("pomodoro")                          => List("Pomodoro")
+        case l if l.contains("time block")                        => List("Time Blocking")
+        case l if l.contains("eisenhower")                        => List("Eisenhower Matrix")
+        case _                                                    => List.empty
+      }
+    }
+
+    // HOF groupBy — group by topic name
+    val grouped: Map[String, List[String]] = allTopics.groupBy(t => t)
+
+    // HOF map — convert to (topic, count) pairs
+    val counted: List[(String, Int)] = grouped.map {
+      case (topic, occurrences) => (topic, occurrences.length)
+    }.toList
+
+    // HOF sortBy — sort by count descending
+    counted.sortBy { case (_, count) => -count }
+  }
+
+  // ─────────────────────────────────────────────
+  // getUserMood
+  // Purpose: Simple keyword-based sentiment detection.
+  //          Adapts chatbot tone based on user mood.
+  // ✅ PATTERN MATCHING on sentiment score.
+  // ✅ HOF — filter, length
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def getUserMood(history: List[InteractionEntry]): String = {
+
+    val positiveWords = List("great", "love", "amazing", "helpful", "good",
+                             "excellent", "fantastic", "thanks", "perfect", "awesome")
+    val negativeWords = List("boring", "bad", "useless", "hate", "dont like",
+                             "not helpful", "confusing", "difficult", "stuck", "frustrated")
+
+    // HOF — count positive and negative signals across history
+    val positiveCount = history.filter { entry =>
+      positiveWords.exists(w => entry.userInput.toLowerCase.contains(w))
+    }.length
+
+    val negativeCount = history.filter { entry =>
+      negativeWords.exists(w => entry.userInput.toLowerCase.contains(w))
+    }.length
+
+    // Pattern matching on mood score
+    (positiveCount, negativeCount) match {
+      case (p, n) if p > n && p > 0 => "positive"
+      case (p, n) if n > p && n > 0 => "negative"
+      case (p, n) if p == n && p > 0 => "neutral"
+      case _                         => "neutral"
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // handleSummaryRequest
+  // Purpose: Processes [SUMMARY_REQUEST] tag from Module 1.
+  // ✅ PATTERN MATCHING on request type.
+  // Pure function.
+  // ─────────────────────────────────────────────
+  def handleSummaryRequest(tag: String, state: ConversationState): String = {
+
+    tag match {
+
+      case "[SUMMARY_REQUEST]" =>
+        summarizeConversation(state.history)
+
+      case "[ANALYSIS_REQUEST]" =>
+        val mood   = getUserMood(state.history)
+        val topics = getMostDiscussedTopics(state.history)
+
+        // Pattern matching on mood
+        val moodMessage = mood match {
+          case "positive" => "You seem to be enjoying our session! Keep it up."
+          case "negative" => "I sense some frustration. I will do my best to help better."
+          case _          => "You seem focused and neutral. Let us keep making progress."
+        }
+
+        val topicsText = topics match {
+          case Nil  => "No specific topics detected yet."
+          case list =>
+            list.take(3).map { case (topic, count) =>
+              s"  • $topic ($count time(s))"
+            }.mkString("\n")
+        }
+
+        s"""
+        | ── Conversation Analysis ─────────────────────
+        | Mood detected: ${mood.capitalize}
+        | $moodMessage
+        |
+        | Most discussed topics:
+        $topicsText
+        | ──────────────────────────────────────────────
+        """.stripMargin
+
+      case _ =>
+        "I was unable to process your request. Please try again."
+    }
+  }
+}
