@@ -36,10 +36,7 @@ import models.Models._
 
 object CoreChatbot {
 
-  // ─────────────────────────────────────────────
-  // greetUser()
-  // Purpose: Returns an initial greeting when the chatbot starts.
-  // ─────────────────────────────────────────────
+  
   def greetUser(): String =
     """
       |╔══════════════════════════════════════════════════════╗
@@ -67,9 +64,7 @@ object CoreChatbot {
       | How may I assist you today?
     """.stripMargin
 
-  // ─────────────────────────────────────────────
   
-  // ─────────────────────────────────────────────
   def parseInput(input: String): List[String] =
     input
       .toLowerCase
@@ -78,68 +73,64 @@ object CoreChatbot {
       .toList
       .filter(_.nonEmpty)            // remove empty strings
 
-  // ─────────────────────────────────────────────
   
-  // ─────────────────────────────────────────────
   def containsAny(tokens: List[String], keywords: List[String]): Boolean =
     keywords.exists(kw => tokens.exists(t => t.contains(kw)))
 
-  // ─────────────────────────────────────────────
   
-  // ─────────────────────────────────────────────
-  def detectIntent(tokens: List[String]): String =
+  def detectIntent(tokens: List[String]): Intent =
     tokens match {
       case t if containsAny(t, List("hi", "hello", "hey", "greetings", "good"))
-      => "greeting"
+      => Greeting
 
       case t if containsAny(t, List("recommend", "suggest", "give", "best", "help me choose"))
-      => "recommendation_request"
+      => RecommendationReq
 
       case t if containsAny(t, List("what", "explain", "tell", "how", "describe", "define"))
-      => "explanation_request"
+      => ExplanationReq
 
       case t if containsAny(t, List("prefer", "like", "want", "goal", "need", "update", "set"))
-      => "preference_update"
+      => PreferenceUpdate
 
       case t if containsAny(t, List("history", "summary", "summarize", "recap", "so far"))
-      => "summary_request"
+      => SummaryRequest
 
       case t if containsAny(t, List("mood", "topics", "discussed", "most talked"))
-      => "analysis_request"
+      => AnalysisRequest
 
       case t if containsAny(t, List("quit", "exit", "bye", "goodbye", "stop"))
-      => "exit"
+      => ExplanationReq
 
       case _
-      => "unknown"
+      => UnknownIntent
     }
 
   
-  // ─────────────────────────────────────────────
+  
   def generateResponse(query: String, state: ConversationState): String = {
     val tokens = parseInput(query)
     val intent = detectIntent(tokens)
 
     intent match {
-      case "greeting"               => generateGreetingResponse(state)
-      case "recommendation_request" => generateRecommendationPrompt(tokens, state)
-      case "explanation_request"    => generateExplanationResponse(tokens)
-      case "preference_update"      => generatePreferenceUpdateResponse(tokens, state)
-      case "summary_request"        => "[SUMMARY_REQUEST]"   // Module 3 handles this
-      case "analysis_request"       => "[ANALYSIS_REQUEST]"  // Module 3 handles this
-      case "exit"                   => generateFarewellResponse(state)
-      case _                        => generateFallbackResponse(tokens)
+      case Greeting               => generateGreetingResponse(state)
+      case RecommendationReq => generateRecommendationPrompt(tokens, state)
+      case ExplanationReq    => generateExplanationResponse(tokens)
+      case PreferenceUpdate     => generatePreferenceUpdateResponse(tokens, state)
+      case SummaryRequest        => "[SUMMARY_REQUEST]"   // Module 3 handles this
+      case AnalysisRequest      => "[ANALYSIS_REQUEST]"  // Module 3 handles this
+      case ExitRequest                 => generateFarewellResponse(state)
+      case UnknownIntent                        => generateFallbackResponse(tokens)
     }
   }
 
   
-  def handleUserInput(input: String, state: ConversationState): (String, String) = {
+  def handleUserInput(input: String, state: ConversationState): (String, Intent) = {
 
     val safeInput: Option[String] = Option(input).filter(_.trim.nonEmpty)
 
     safeInput match {
       case None =>
-        ("I did not receive any input. Please type your query and press Enter.", "empty_input")
+        ("I did not receive any input. Please type your query and press Enter.", UnknownIntent)
 
       case Some(userText) =>
         val tokens   = parseInput(userText)

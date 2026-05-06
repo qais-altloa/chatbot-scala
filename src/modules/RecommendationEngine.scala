@@ -7,23 +7,17 @@ import data.KnowledgeBase.allTechniques
 
 object RecommendationEngine {
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getUserPreferences(state: ConversationState): Map[String, String] =
     state.preferences
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def updatePreferences(key: String, value: String, state: ConversationState): ConversationState = {
     val updatedPreferences = state.preferences + (key -> value)
     state.copy(preferences = updatedPreferences)
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def scoreItem(technique: Technique, preferences: Map[String, String]): Int = {
 
     val goalScore: Int = preferences.get("goal") match {
@@ -49,9 +43,7 @@ object RecommendationEngine {
     goalScore + difficultyScore + durationScore
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def recommend(preferences: Map[String, String], data: List[Technique]): Option[List[Technique]] = {
 
     // Step 1: Score every technique — HOF map
@@ -77,9 +69,7 @@ object RecommendationEngine {
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def explainRecommendation(technique: Technique, preferences: Map[String, String]): String = {
 
     val goalReason: String = preferences.get("goal") match {
@@ -119,9 +109,7 @@ object RecommendationEngine {
     """.stripMargin
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def explainTechnique(name: String): Option[String] = {
 
     val found: Option[Technique] =
@@ -142,15 +130,14 @@ object RecommendationEngine {
           | Description:
           | ${technique.description}
           |
+          |
           | Tags: ${technique.tags.mkString(", ")}
           """.stripMargin
         )
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def handleRecommendationRequest(tag: String, state: ConversationState): String = {
 
     tag match {
@@ -222,15 +209,11 @@ object RecommendationEngine {
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getAllCategories(): List[String] =
     allTechniques.map(_.category).distinct.sorted
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getTechniquesByCategory(category: String): Option[List[Technique]] = {
     val filtered = allTechniques.filter(_.category == category)
     filtered match {

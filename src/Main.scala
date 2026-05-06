@@ -7,19 +7,12 @@ import modules.ConversationMemory._
 
 object Main extends App {
 
-  // ─────────────────────────────────────────────
 
-  // ─────────────────────────────────────────────
   var state = ConversationState.empty
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   println(greetUser())
 
-  // ─────────────────────────────────────────────
-  
-  // ─────────────────────────────────────────────
   var running = true
 
   while (running) {
@@ -33,20 +26,20 @@ object Main extends App {
 
     // Step 2: Check if exit
     intent match {
-      case "exit" =>
+      case ExitRequest =>
         println(s"\nBot: $response")
         running = false
 
-      case "empty_input" =>
+      case UnknownIntent =>
         println(s"\nBot: $response")
 
-      case "summary_request" =>
+      case SummaryRequest =>
         // Step 3a: Route to Module 3 for summary
         val summaryResponse = handleSummaryRequest("[SUMMARY_REQUEST]", state)
         println(s"\nBot: $summaryResponse")
         state = logInteraction(userInput, summaryResponse, state)
 
-      case "analysis_request" =>
+      case AnalysisRequest=>
         // Step 3b: Route to Module 3 for analysis
         val analysisResponse = handleSummaryRequest("[ANALYSIS_REQUEST]", state)
         println(s"\nBot: $analysisResponse")
@@ -100,9 +93,7 @@ object Main extends App {
     }
   }
 
-  // ─────────────────────────────────────────────
-  
-  // ─────────────────────────────────────────────
+
   def extractTag(response: String, tagStart: String): String = {
     val startIndex = response.indexOf(tagStart)
     val endIndex   = response.indexOf("]", startIndex)

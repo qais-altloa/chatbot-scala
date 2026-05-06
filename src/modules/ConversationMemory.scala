@@ -15,9 +15,7 @@ import models.Models._
 
 object ConversationMemory {
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def logInteraction(
     userInput   : String,
     botResponse : String,
@@ -29,32 +27,28 @@ object ConversationMemory {
       timestamp      = java.time.LocalDateTime.now().toString,
       userInput      = userInput,
       botResponse    = botResponse,
-      detectedIntent = detectIntentFromInput(userInput)
+      detectedIntent = detectIntentFromInput(userInput).toString
     )
 
     // Return NEW state — original untouched
     context.copy(history = context.history :+ entry)
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
-  private def detectIntentFromInput(input: String): String = {
+  
+  private def detectIntentFromInput(input: String): Intent = {
     val lower = input.toLowerCase
     lower match {
-      case l if l.contains("recommend") || l.contains("suggest") => "recommendation_request"
-      case l if l.contains("what") || l.contains("explain")      => "explanation_request"
-      case l if l.contains("prefer") || l.contains("like")       => "preference_update"
-      case l if l.contains("summary") || l.contains("summarize") => "summary_request"
-      case l if l.contains("hi") || l.contains("hello")          => "greeting"
-      case l if l.contains("quit") || l.contains("bye")          => "exit"
-      case _                                                      => "unknown"
+      case l if l.contains("recommend") || l.contains("suggest") => RecommendationReq
+      case l if l.contains("what") || l.contains("explain")      => ExplanationReq
+      case l if l.contains("prefer") || l.contains("like")       => PreferenceUpdate
+      case l if l.contains("summary") || l.contains("summarize") => SummaryRequest
+      case l if l.contains("hi") || l.contains("hello")          => Greeting
+      case l if l.contains("quit") || l.contains("bye")          => ExitRequest
+      case _                                                      => UnknownIntent
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getConversationHistory(state: ConversationState): List[InteractionEntry] =
     state.history
 
@@ -64,9 +58,7 @@ object ConversationMemory {
   def getLastNInteractions(n: Int, state: ConversationState): List[InteractionEntry] =
     state.history.takeRight(n)
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def detectRepeatedQuery(input: String, history: List[InteractionEntry]): Boolean = {
 
     val inputWords = input.toLowerCase.split("\\s+").toList.filter(_.length > 3)
@@ -79,9 +71,7 @@ object ConversationMemory {
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def extractTopics(history: List[InteractionEntry]): List[String] = {
 
     // HOF flatMap — extract topics from each entry
@@ -109,12 +99,10 @@ object ConversationMemory {
     topics.distinct
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def summarizeConversation(history: List[InteractionEntry]): String = {
 
-    // Pattern matching on history size
+    
     history match {
       case Nil =>
         "No conversation history found yet. Start chatting to build your history!"
@@ -146,9 +134,7 @@ object ConversationMemory {
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getMostDiscussedTopics(history: List[InteractionEntry]): List[(String, Int)] = {
 
     // Extract all topics including duplicates
@@ -179,9 +165,7 @@ object ConversationMemory {
     counted.sortBy { case (_, count) => -count }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def getUserMood(history: List[InteractionEntry]): String = {
 
     val positiveWords = List("great", "love", "amazing", "helpful", "good",
@@ -207,9 +191,7 @@ object ConversationMemory {
     }
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   def handleSummaryRequest(tag: String, state: ConversationState): String = {
 
     tag match {

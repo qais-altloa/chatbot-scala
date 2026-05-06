@@ -3,9 +3,7 @@ package models
 
 object Models {
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   case class Technique(
     name        : String,       // e.g. "Pomodoro Technique"
     category    : String,       // focus | time-management | energy | planning | prioritization
@@ -15,9 +13,7 @@ object Models {
     tags        : List[String]  // e.g. List("timer", "breaks", "focus")
   )
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   case class InteractionEntry(
     sequenceNo     : Int,     // turn number (1, 2, 3, ...)
     timestamp      : String,  // time of interaction (ISO string)
@@ -26,18 +22,14 @@ object Models {
     detectedIntent : String   // classified intent (e.g. "recommendation_request")
   )
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   case class ConversationState(
     history      : List[InteractionEntry],  // full conversation log
     preferences  : Map[String, String],     // user preferences (e.g. goal -> focus)
     sessionCount : Int                      // how many sessions the user has had
   )
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+  
   object ConversationState {
     def empty: ConversationState = ConversationState(
       history      = List.empty,
@@ -46,9 +38,7 @@ object Models {
     )
   }
 
-  // ─────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────
+ 
   sealed trait Intent
   case object Greeting            extends Intent
   case object RecommendationReq   extends Intent
