@@ -20,7 +20,7 @@ object ConversationMemory {
       detectedIntent = detectIntentFromInput(userInput).toString
     )
 
-    // Return NEW state — original untouched
+   
     context.copy(history = context.history :+ entry)
   }
 
@@ -42,9 +42,7 @@ object ConversationMemory {
   def getConversationHistory(state: ConversationState): List[InteractionEntry] =
     state.history
 
-  // ─────────────────────────────────────────────
 
-  // ─────────────────────────────────────────────
   def getLastNInteractions(n: Int, state: ConversationState): List[InteractionEntry] =
     state.history.takeRight(n)
 
@@ -53,7 +51,7 @@ object ConversationMemory {
 
     val inputWords = input.toLowerCase.split("\\s+").toList.filter(_.length > 3)
 
-    // HOF exists — check if any past input shares 2+ keywords
+    
     history.exists { entry =>
       val entryWords = entry.userInput.toLowerCase.split("\\s+").toList
       val commonWords = inputWords.filter(w => entryWords.exists(e => e.contains(w)))
@@ -64,11 +62,11 @@ object ConversationMemory {
   
   def extractTopics(history: List[InteractionEntry]): List[String] = {
 
-    // HOF flatMap — extract topics from each entry
+    
     val topics = history.flatMap { entry =>
       val lower = entry.userInput.toLowerCase
 
-      // Pattern matching to classify topic
+      
       lower match {
         case l if l.contains("pomodoro")                          => List("Pomodoro")
         case l if l.contains("deep work")                        => List("Deep Work")
@@ -85,7 +83,7 @@ object ConversationMemory {
       }
     }
 
-    // HOF distinct — remove duplicates
+   
     topics.distinct
   }
 
@@ -100,12 +98,12 @@ object ConversationMemory {
       case entries =>
         val totalInteractions = entries.length
 
-        // HOF filter — count each intent type
-        val recommendations = entries.filter(_.detectedIntent == "recommendation_request").length
-        val explanations    = entries.filter(_.detectedIntent == "explanation_request").length
-        val preferences     = entries.filter(_.detectedIntent == "preference_update").length
+        
+        val recommendations = entries.filter(_.detectedIntent == "RecommendationReq").length
+        val explanations    = entries.filter(_.detectedIntent == "ExplanationReq").length
+        val preferences     = entries.filter(_.detectedIntent == "PreferenceUpdate").length
 
-        // Extract topics discussed
+        
         val topics = extractTopics(entries)
         val topicsText = topics match {
           case Nil  => "no specific topics"
@@ -127,7 +125,7 @@ object ConversationMemory {
   
   def getMostDiscussedTopics(history: List[InteractionEntry]): List[(String, Int)] = {
 
-    // Extract all topics including duplicates
+   
     val allTopics: List[String] = history.flatMap { entry =>
       val lower = entry.userInput.toLowerCase
       lower match {
@@ -143,15 +141,15 @@ object ConversationMemory {
       }
     }
 
-    // HOF groupBy — group by topic name
+    
     val grouped: Map[String, List[String]] = allTopics.groupBy(t => t)
 
-    // HOF map — convert to (topic, count) pairs
+    
     val counted: List[(String, Int)] = grouped.map {
       case (topic, occurrences) => (topic, occurrences.length)
     }.toList
 
-    // HOF sortBy — sort by count descending
+   
     counted.sortBy { case (_, count) => -count }
   }
 
@@ -163,7 +161,7 @@ object ConversationMemory {
     val negativeWords = List("boring", "bad", "useless", "hate", "dont like",
                              "not helpful", "confusing", "difficult", "stuck", "frustrated")
 
-    // HOF — count positive and negative signals across history
+    
     val positiveCount = history.filter { entry =>
       positiveWords.exists(w => entry.userInput.toLowerCase.contains(w))
     }.length
@@ -172,7 +170,7 @@ object ConversationMemory {
       negativeWords.exists(w => entry.userInput.toLowerCase.contains(w))
     }.length
 
-    // Pattern matching on mood score
+    
     (positiveCount, negativeCount) match {
       case (p, n) if p > n && p > 0 => "positive"
       case (p, n) if n > p && n > 0 => "negative"

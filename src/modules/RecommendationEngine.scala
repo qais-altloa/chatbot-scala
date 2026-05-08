@@ -46,23 +46,23 @@ object RecommendationEngine {
   
   def recommend(preferences: Map[String, String], data: List[Technique]): Option[List[Technique]] = {
 
-    // Step 1: Score every technique — HOF map
+    
     val scored: List[(Technique, Int)] =
       data.map(t => (t, scoreItem(t, preferences)))
 
-    // Step 2: Keep only score > 0 — HOF filter
+    
     val matched: List[(Technique, Int)] =
       scored.filter { case (_, score) => score > 0 }
 
-    // Step 3: Sort by score descending — HOF sortBy
+    
     val ranked: List[(Technique, Int)] =
       matched.sortBy { case (_, score) => -score }
 
-    // Step 4: Take top 3
+   
     val topThree: List[Technique] =
       ranked.take(3).map { case (technique, _) => technique }
 
-    // Step 5: Wrap in Option
+    
     topThree match {
       case Nil  => None
       case list => Some(list)
