@@ -31,7 +31,30 @@ object CoreChatbot {
     | How may I assist you today?
     """.stripMargin
 
-  
+
+  def normalizedInput(word:String):String = {
+    word.replaceAll("(.)\\1+","$1")
+  }
+
+  def levenshtein(a: String, b: String): Int =
+    (a.toList, b.toList) match {
+
+      case (Nil, ys) => ys.length
+
+      case (xs, Nil) => xs.length
+
+      case (x :: xs, y :: ys) =>
+
+        val cost =
+          if (x == y) 0
+          else 1
+
+        List(
+          levenshtein(xs.mkString, b) + 1,
+          levenshtein(a, ys.mkString) + 1,
+          levenshtein(xs.mkString, ys.mkString) + cost
+        ).min
+    }
   def parseInput(input: String): List[String] =
     input
       .toLowerCase
@@ -42,37 +65,43 @@ object CoreChatbot {
 
   
   def containsAny(tokens: List[String], keywords: List[String]): Boolean =
-    keywords.exists(kw => tokens.exists(t => t == kw))
+    keywords.exists(kw => 
+    tokens.exists( t => 
+    levenshtein(
+      normalizedInput(t),
+      normalizedInput(kw)
+    ) <= 1
+    ))
 
-  
+
   def detectIntent(tokens: List[String]): Intent =
     tokens match {
 
       
-      case t if containsAny(t, List("quit", "exit", "bye", "goodbye", "stop"))
+      case t if containsAny(t, List("quit", "exit", "bye", "goodbye", "stop","godbye"))
         => ExitRequest
 
       
-      case t if containsAny(t, List("summary", "summarize", "recap"))
+      case t if containsAny(t, List("summary", "summarize", "recap","sumary","sumarize"))
         => SummaryRequest
 
-      case t if containsAny(t, List("mood", "topics", "discussed", "analysis", "analyze"))
+      case t if containsAny(t, List("mood", "topics", "discussed", "analysis", "analyze","mod"))
         => AnalysisRequest
 
       
-      case t if containsAny(t, List("recommend", "suggest", "give", "show"))
+      case t if containsAny(t, List("recommend", "suggest", "give", "show","recomend"))
         => RecommendationReq
 
       
-      case t if containsAny(t, List("what", "explain", "tell", "how", "describe", "define"))
+      case t if containsAny(t, List("what", "explain", "tell", "how", "describe", "define","tel"))
         => ExplanationReq
 
       
-      case t if containsAny(t, List("prefer", "like", "love", "goal", "need", "want", "update", "set", "beginner", "intermediate", "advanced", "short", "medium", "long", "focus", "energy", "plan", "priorit"))
+      case t if containsAny(t, List("prefer", "like", "love", "goal", "need","ned", "want", "update", "set", "beginner", "intermediate", "advanced", "short", "medium", "long", "focus", "energy", "plan", "priorit","beginer"))
         => PreferenceUpdate
 
       
-      case t if containsAny(t, List("hi", "hello", "hey", "greetings"))
+      case t if containsAny(t, List("hi", "hello", "hey", "greetings","helo","gretings"))
         => Greeting
 
       case t if containsAny(t, List("pomodoro", "eisenhower", "kanban",
@@ -88,6 +117,7 @@ object CoreChatbot {
   def generateResponse(query: String, state: ConversationState): String = {
     val tokens = parseInput(query)
     val intent = detectIntent(tokens)
+    
 
     intent match {
       case Greeting          => generateGreetingResponse(state)
