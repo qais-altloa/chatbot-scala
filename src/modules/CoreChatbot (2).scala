@@ -36,25 +36,44 @@ object CoreChatbot {
     word.replaceAll("(.)\\1+","$1")
   }
 
-  def levenshtein(a: String, b: String): Int =
-    (a.toList, b.toList) match {
+  def levenshtein(a: String, b: String): Int = {
+    
+    def compute(
+                 i    : Int,
+                 j    : Int,
+                 memo : Map[(Int, Int), Int]
+               ): (Int, Map[(Int, Int), Int]) = {
+      
+      (i, j) match {
+        case (0, j) => (j, memo)
+        case (i, 0) => (i, memo)
+        case _ =>
+          memo.get((i, j)) match {
 
-      case (Nil, ys) => ys.length
+            case Some(cached) =>
+              (cached, memo)
 
-      case (xs, Nil) => xs.length
+            case None =>
+              val cost = if (a(i-1) == b(j-1)) 0 else 1
 
-      case (x :: xs, y :: ys) =>
+              val (del, memo1) = compute(i-1, j,   memo)
+              val (ins, memo2) = compute(i,   j-1, memo1)
+              val (sub, memo3) = compute(i-1, j-1, memo2)
 
-        val cost =
-          if (x == y) 0
-          else 1
-
-        List(
-          levenshtein(xs.mkString, b) + 1,
-          levenshtein(a, ys.mkString) + 1,
-          levenshtein(xs.mkString, ys.mkString) + cost
-        ).min
+              val result = List(
+                del + 1,
+                ins + 1,
+                sub + cost
+              ).min
+              
+              (result, memo3 + ((i, j) -> result))
+          }
+      }
     }
+
+    val (result, _) = compute(a.length, b.length, Map.empty)
+    result
+  }
   def parseInput(input: String): List[String] =
     input
       .toLowerCase
@@ -176,14 +195,13 @@ object CoreChatbot {
         => Some("time_management")
       case t if containsAny(t, List("energy", "motivation", "burnout", "tired"))
         => Some("energy_management")
-      case t if containsAny(t, List("priorit", "important", "urgent", "task"))
+      case t if containsAny(t, List("prioritization","prioritize","priority", "important", "urgent", "task"))
         => Some("prioritization")
       case t if containsAny(t, List("planning", "kanban", "mind", "smart"))
         => Some("planning")
       case _ => None
     }
-
-    // ✅ Pattern matching on Option
+    
     goalHint match {
       case Some(goal) =>
         s"""
@@ -259,7 +277,6 @@ object CoreChatbot {
         """.stripMargin
     }
   }
-
   private def generatePreferenceUpdateResponse(tokens: List[String], state: ConversationState): String = {
 
     
@@ -270,7 +287,7 @@ object CoreChatbot {
         => Some("goal", "energy_management")
       case t if containsAny(t, List("plan", "planning"))
         => Some("goal", "planning")
-      case t if containsAny(t, List("priorit"))
+      case t if containsAny(t, List("prioritization","priority","prioritize"))
         => Some("goal", "prioritization")
       case t if containsAny(t, List("time", "schedule"))
         => Some("goal", "time_management")

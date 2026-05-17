@@ -2,7 +2,6 @@ package models
 
 
 object Models {
-
   
   case class Technique(
     name        : String,       // e.g. "Pomodoro Technique"
