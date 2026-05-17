@@ -141,7 +141,7 @@ object ConversationMemory {
       }
     }
 
-    
+
     val grouped: Map[String, List[String]] = allTopics.groupBy(t => t)
 
     

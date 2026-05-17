@@ -258,6 +258,12 @@ object CoreChatbot {
         => Some("SMART Goals")
       case t if containsAny(t, List("ivy")) && containsAny(t, List("lee"))
         => Some("Ivy Lee Method")
+      case t if containsAny(t, List("moscow"))
+      => Some("MoSCoW Method")
+      case t if containsAny(t, List("ultradian"))
+      => Some("Ultradian Rhythm Method")
+      case t if containsAny(t, List("batch"))
+      => Some("Batch Processing")
       case _ => None
     }
 

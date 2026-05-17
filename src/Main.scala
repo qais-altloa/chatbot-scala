@@ -130,7 +130,7 @@ object Main extends App {
             
             val finalResponse = response match {
 
-              
+
               case r if r.contains("[RECOMMENDATION_REQUEST:") =>
                 val tag  = extractTag(r, "[RECOMMENDATION_REQUEST:")
                 val goal = tag.replace("[RECOMMENDATION_REQUEST:", "").replace("]", "")
@@ -205,12 +205,11 @@ object Main extends App {
     }
   }
 
-  
   def extractTag(response: String, tagStart: String): String = {
     val startIndex = response.indexOf(tagStart)
     val endIndex   = response.indexOf("]", startIndex)
     if (startIndex >= 0 && endIndex >= 0)
-      response.substring(startIndex, endIndex + 1)
+      response.substring(startIndex, endIndex + 1) 
     else
       ""
   }
